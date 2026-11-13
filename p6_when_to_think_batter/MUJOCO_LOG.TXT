@@ -1,0 +1,3 @@
+WARNING Fri Nov 13 11:02:37 2026: Attach conflict when attaching 'panda nohand' to 'rally', policy is 'warning'
+integrator: parent has 0, child has 3, keeping parent value
+

@@ -1,0 +1,84 @@
+---
+title: When-to-Think Batter
+description: A Panda arm swings a 1.2 cm bat at pitched baseballs in MuJoCo 4.0. The planner that builds each swing is expensive; the research question is when to run it.
+template: splash
+hero:
+  tagline: A robot arm has about half a second to meet a pitched ball with a bat 1.2 cm thick and send it to a target. Planning the swing is expensive, and the estimate it is built on keeps changing. Replanning at every step works; this site is about how rarely you can get away with it, and what decides when to think.
+  actions:
+    - text: Begin with the central idea
+      link: /overview/big-idea/
+      icon: right-arrow
+    - text: Lessons and limits
+      link: /lessons/lessons/
+      icon: warning
+      variant: minimal
+    - text: Run it and watch
+      link: /reference/running-it/
+      icon: laptop
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## The subject of this material
+
+A Franka Panda stands on a pedestal with a flat bat welded to its flange. A pitching machine 6.5 m away throws baseballs at 9 to 13 m/s, with random height, aim and spin. A camera reports the ball's position 100 times a second, 30 ms late, with noise that grows with range. The arm must swing so that the bat meets the ball and sends it to a target zone on the ground several metres out.
+
+<figure class="sim">
+<video src="/video/hitter.mp4" width="960" height="540" loop muted playsinline controls preload="metadata"></video>
+<figcaption>Four pitches, the model-based batter replanning at every 10 ms step. White: the ball's trail. Green: the current forecast of its path. Orange: the forecast the cached swing was built on. Yellow markers: where the ball was when the planner ran.</figcaption>
+</figure>
+
+The swing is built by an expensive planner: it forecasts where the ball will cross the hitting plane, solves backwards through the impact for the bat pose and speed that send the ball to the target, and solves a trajectory problem for seven joints. Called at every step it costs 48 calls per pitch. The question this project asks is the one in its name: **when is it worth thinking again?**
+
+<CardGrid>
+	<Card title="I · The problem and the idea" icon="rocket">
+		Why hitting is a forecasting problem with a deadline, what "when to think" means, and what was achieved.
+
+		[Read →](/overview/big-idea/)
+	</Card>
+	<Card title="II · The batting cage" icon="puzzle">
+		The arm, the 1.2 cm bat, the pitching machine and its hidden spin, and why the ball goes straight through the bat without speculative contacts.
+
+		[Read →](/simulation/cage/)
+	</Card>
+	<Card title="III · Seeing the ball" icon="magnifier">
+		The ball's flight in closed form, matching the simulator to 1e-9 m, and an EKF on delayed fixes whose forecast starts tens of centimetres off.
+
+		[Read →](/estimation/flight-model/)
+	</Card>
+	<Card title="IV · The expensive planner" icon="setting">
+		From a forecast to a swing: aiming, inverting the impact, five-degree-of-freedom inverse kinematics and a joint QP per joint.
+
+		[Read →](/planner/impact-and-aim/)
+	</Card>
+	<Card title="V · A learned planner" icon="pencil">
+		A small latent world model and MPPI in place of all of that, trained on 48,000 pitches. It hits; it does not aim.
+
+		[Read →](/world-model/model/)
+	</Card>
+	<Card title="VI · When to think" icon="random">
+		Fixed-rate, innovation, variance, drift and learned triggers, and the trade between hit quality and planner calls.
+
+		[Read →](/when-to-think/triggers/)
+	</Card>
+	<Card title="VII · Surprises and events" icon="star">
+		Gusts and spin changes in mid-flight; which triggers notice, and an emulated event camera that notices sooner.
+
+		[Read →](/surprises/surprises/)
+	</Card>
+	<Card title="VIII · Stretch: the rally" icon="seti:pipeline">
+		Two Pandas keep a ping-pong rally going on a midi table: an exact table bounce, and a rule about when not to think that doubled the rally.
+
+		[Read →](/rally/rally/)
+	</Card>
+	<Card title="IX · Lessons and limits" icon="warning">
+		What was learned, what did not work, and what the numbers do not show.
+
+		[Read →](/lessons/lessons/)
+	</Card>
+</CardGrid>
+
+## The result in one paragraph
+
+A closed-form copy of the simulator's flight step lets an EKF forecast where the ball will cross the plate; that forecast is 17 cm off half a second out and 0.5 cm off in the last 25 ms, so the swing has to be re-planned as the pitch comes in. Re-planned at every step, the analytic planner hits every pitch and lands 97.8 ± 0.2 % of them in the target zone; planned once, it hits 11.8 %. A learned world-model planner trained on 48,000 pitches hits 96.9 % but lands only 54.9 % on target. Among the compute triggers, the classical event triggers (innovation, variance, drift) all lose to a plain fixed rate at the same budget, because they spend their calls early, when the estimate moves by centimetres, and go quiet late, when millimetres decide the hit. A PPO trigger learns the opposite schedule: at about 4 planner calls per pitch it keeps a hit quality of 0.94 against 0.91 for a fixed rate, and at about 3 calls 0.81 against 0.58. Under mid-flight gusts the data-driven triggers spend extra calls and a fixed schedule does not; no trigger recovers the quality a gust costs. As a stretch, two arms with the same stack keep a ping-pong rally going for 10.0 returns on average (11.5 with the true ball state), once they stop replanning while the filter is unsure. All figures are means over three seeds and are regenerated by the scripts in [Running it](/reference/running-it/).

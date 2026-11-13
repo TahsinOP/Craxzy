@@ -1,0 +1,116 @@
+---
+title: Card Catcher
+description: A Panda arm catches a thrown ball, plate and playing card in MuJoCo 4.0 with a physics predictor, a learned aerodynamic residual, a QP interception controller and event-triggered replanning.
+template: splash
+hero:
+  tagline: A robot arm has about 0.6 seconds to put its hand where a thrown object will be. Physics predicts a ball to 3.5 mm. A fluttering 0.7 mm playing card is another matter, and that gap is what a learned residual, an honest covariance and a replanning trigger are for.
+  actions:
+    - text: Begin with the central idea
+      link: /overview/big-idea/
+      icon: right-arrow
+    - text: Run it and watch
+      link: /reference/running-it/
+      icon: laptop
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## The subject of this material
+
+A Franka Panda hangs from a gantry above a table. A ball, a plate or a playing card is thrown at it. A sensor reports the object's position, with 3 mm of noise, 125 times a second, and loses one fix in ten. From those fixes alone the system must decide where and when the object will cross a plane in front of the arm, move the hand there in time, and close on it.
+
+<figure class="sim">
+<video src="/video/catch_ball.mp4" loop muted playsinline controls preload="metadata"></video>
+<figcaption>Three ball throws at one eighth of real time, wide view and close view. The predictor here is physics only; the planner is called 50 times a second.</figcaption>
+</figure>
+
+Everything is simulated in MuJoCo 4.0 on the CPU, and three of its features carry weight here: **speculative contacts**, without which a card passes straight through a finger; the **ellipsoid fluid model**, which makes a card flutter; and **`mujoco.batch`**, which steps a few hundred worlds at once for evaluation and reinforcement learning.
+
+The stack is deliberately hybrid. Each layer is a classical method where a classical method is exact, and a learned one only where the classical model has run out:
+
+<figure class="diagram">
+<svg viewBox="0 0 760 250" role="img" aria-label="The pipeline from position fixes to joint torques">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--sl-color-gray-3)"></path></marker></defs>
+<rect class="box" x="10" y="20" width="130" height="64" rx="8"></rect>
+<text x="75" y="46" text-anchor="middle" font-size="13" font-weight="600">Position fixes</text>
+<text class="sub" x="75" y="65" text-anchor="middle">125 Hz, σ = 3 mm</text>
+<rect class="box" x="170" y="20" width="130" height="64" rx="8"></rect>
+<text x="235" y="46" text-anchor="middle" font-size="13" font-weight="600">Physics + EKF</text>
+<text class="sub" x="235" y="65" text-anchor="middle">the simulator's own step</text>
+<rect class="box-accent" x="330" y="20" width="130" height="64" rx="8"></rect>
+<text x="395" y="46" text-anchor="middle" font-size="13" font-weight="600">Learned residual</text>
+<text class="sub" x="395" y="65" text-anchor="middle">mean and variance</text>
+<rect class="box" x="490" y="20" width="130" height="64" rx="8"></rect>
+<text x="555" y="46" text-anchor="middle" font-size="13" font-weight="600">Forecast</text>
+<text class="sub" x="555" y="65" text-anchor="middle">catch point, time, Σ</text>
+<rect class="box-accent" x="490" y="150" width="130" height="64" rx="8"></rect>
+<text x="555" y="176" text-anchor="middle" font-size="13" font-weight="600">Trigger</text>
+<text class="sub" x="555" y="195" text-anchor="middle">replan now?</text>
+<rect class="box" x="330" y="150" width="130" height="64" rx="8"></rect>
+<text x="395" y="176" text-anchor="middle" font-size="13" font-weight="600">IK + trajectory QP</text>
+<text class="sub" x="395" y="195" text-anchor="middle">limits, arrival time</text>
+<rect class="box" x="170" y="150" width="130" height="64" rx="8"></rect>
+<text x="235" y="176" text-anchor="middle" font-size="13" font-weight="600">Computed torque</text>
+<text class="sub" x="235" y="195" text-anchor="middle">discrete, exact tracking</text>
+<rect class="box" x="10" y="150" width="130" height="64" rx="8"></rect>
+<text x="75" y="176" text-anchor="middle" font-size="13" font-weight="600">MuJoCo worlds</text>
+<text class="sub" x="75" y="195" text-anchor="middle">mujoco.batch, 8 ms</text>
+<path class="arrow" d="M140 52 H168" marker-end="url(#ah)"></path>
+<path class="arrow" d="M300 52 H328" marker-end="url(#ah)"></path>
+<path class="arrow" d="M460 52 H488" marker-end="url(#ah)"></path>
+<path class="arrow" d="M555 84 V148" marker-end="url(#ah)"></path>
+<path class="arrow" d="M490 182 H462" marker-end="url(#ah)"></path>
+<path class="arrow" d="M330 182 H302" marker-end="url(#ah)"></path>
+<path class="arrow" d="M170 182 H142" marker-end="url(#ah)"></path>
+<path class="arrow" d="M75 150 V86" marker-end="url(#ah)"></path>
+</svg>
+<figcaption>One control step. The two highlighted blocks are learned; everything else is derived. The loop closes through the simulator every 8 ms.</figcaption>
+</figure>
+
+<CardGrid>
+	<Card title="I · The problem and the idea" icon="rocket">
+		Why catching is a prediction problem with a deadline, what "hybrid" means here, and what was achieved and what was not.
+
+		[Read →](/overview/big-idea/)
+	</Card>
+	<Card title="II · Simulation" icon="puzzle">
+		The scene and why the arm hangs upside down, the three objects and their aerodynamics, how throws are generated, and what speculative contacts do for a 0.7 mm card.
+
+		[Read →](/simulation/scene/)
+	</Card>
+	<Card title="III · Estimation" icon="magnifier">
+		The simulator's integration step in closed form, an extended Kalman filter built on it, and the forecast of the catch point with its covariance.
+
+		[Read →](/estimation/discrete-model/)
+	</Card>
+	<Card title="IV · The learned residual" icon="pencil">
+		What exactly is learned, the network and its Gaussian likelihood, and the two corrections that make its uncertainty usable downstream.
+
+		[Read →](/residual/definition/)
+	</Card>
+	<Card title="V · Interception control" icon="setting">
+		From a predicted catch point to a hand pose, a trajectory that respects the joint limits and arrives on time, and torques that track it exactly.
+
+		[Read →](/control/catch-pose/)
+	</Card>
+	<Card title="VI · When to replan" icon="random">
+		Periodic, variance-triggered, drift-triggered and learned triggers; what each one sees, and the trade between catch rate and planner calls.
+
+		[Read →](/replanning/triggers/)
+	</Card>
+	<Card title="VII · Evaluation" icon="approve-check">
+		Catch rates, ablations, the suction disc, and a plain account of the limits.
+
+		[Read →](/evaluation/results/)
+	</Card>
+	<Card title="Reference" icon="information">
+		How to run and watch everything, including the suction catches; symbols; the tests behind each mathematical claim; the papers.
+
+		[Read →](/reference/running-it/)
+	</Card>
+</CardGrid>
+
+## The result in one paragraph
+
+With a physics model that reproduces the simulator's integrator to $10^{-9}$ m, an extended Kalman filter predicts the ball's catch point to 0.35 cm RMS at 200 ms before the catch, and the arm catches 97.3 ± 0.3 % of 768 throws. The same filter is 6.6 cm off for the card. A recurrent network that learns only the residual acceleration, with a Gaussian likelihood, halves that to 3.2 cm, where a network given no physics reaches 5.1 cm; the card's catch rate rises from 10 % to 33 %, against a ceiling of 47 % that a perfect predictor would reach with this gripper. A suction disc retains the plate, which the gripper cannot hold at all, in 87 % of throws. For the ball, a small policy trained with PPO decides when to replan and keeps the catch rate of the 50 Hz baseline with one eighth of the planner calls. All figures are means over three seeds, and every one of them can be regenerated by the scripts listed in [Running it](/reference/running-it/).

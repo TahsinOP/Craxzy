@@ -1,0 +1,60 @@
+# Shared configuration for P6 (when-to-think batter).  Every script reads this file;
+# override values with `--set key.sub=value` (see batter.config).
+#
+# World frame: the robot base is at the origin on a pedestal, the pitching machine is
+# down the +x axis and throws along -x; the field (and the target zone) is at +x.
+
+sim:
+  timestep: 0.010          # s; TASK.md: 8-16 ms with speculative contacts (flipper.xml uses 10 ms)
+  integrator: Euler        # explicit fluid forces: the ball's discrete flight model is exact (estim/flight.py)
+  density: 1.2             # kg/m^3 (air)
+  viscosity: 1.8e-5        # Pa s (air)
+  speculative: true
+
+ball:                      # baseball
+  radius: 0.0365           # m
+  mass: 0.145              # kg
+
+bat:                       # flat blade, 1.2 cm thick: the thin geom speculative contacts are for
+  thickness: 0.012         # m
+  width: 0.09              # m
+  length: 0.38             # m (blade)
+  handle: 0.10             # m, flange to the start of the blade
+  mass: 0.30               # kg
+  restitution: 0.80        # coefficient of restitution of the bat-ball contact pair
+
+pitch:                     # pitching machine
+  release_x: 6.5           # m
+  release_y: [-0.10, 0.10]
+  release_z: [1.00, 1.45]  # "height"
+  speed: [9.0, 13.0]       # m/s at release (below about 8.5 m/s the ball cannot carry to the plate)
+  spin: [0.0, 150.0]       # rad/s, magnitude
+  spin_tilt_deg: 30.0      # the spin axis is +-y (back/top spin) tilted by up to this much towards x and z
+  aim_y: [-0.15, 0.15]     # the machine is zeroed in: the ball (with its drag and spin) crosses the plane
+  aim_z: [0.78, 1.10]      #   x = strike_x at a point drawn from this window
+  strike_x: 0.62           # nominal hitting plane
+
+target:                    # centre of the target zone on the ground, polar about the origin
+  range: [3.5, 6.0]        # m
+  azimuth_deg: [-20.0, 20.0]
+  radius: 0.75             # m: a ball landing within this distance is "on target"
+  sigma: 1.5               # m: hit quality = exp(-0.5 (d / sigma)^2) for a hit landing d from the centre
+
+planner:                   # analytic interception planner (control/planner.py)
+  strike_x: [0.56, 0.68]   # candidate strike planes [m]
+  flight_time: [0.75, 0.95, 1.15]   # candidate times of flight of the hit ball [s]
+  restitution: 0.585       # effective restitution of the impact model; fitted by scripts/m1_hitter.py --calibrate
+
+surprise:                  # M4: mid-flight surprises
+  spin: [100.0, 220.0]     # rad/s: the spin jumps to this magnitude, opposite in sense
+  gust_force: [0.5, 1.2]   # N, across the flight path
+  gust_time: 0.10          # s
+
+measurement:               # camera: position fixes of the ball
+  delay: 0.03              # s, latency (MuJoCo 4.0 sensor delay)
+  sigma0: 0.002            # m, noise std per axis at zero range ...
+  sigma_per_m: 0.002       # ... growing linearly with the distance from the camera (1 cm at 4 m)
+  camera: [-0.6, 0.0, 1.4] # camera position (behind the batter)
+  dropout: 0.05            # probability that a frame is missing
+
+seeds: [0, 1, 2]

@@ -1,0 +1,64 @@
+# Two-arm ping-pong rally (stretch goal).  Read on top of configs/default.yaml by batter.rally:
+#   cfg = config.load(); cfg = rally.load(cfg)
+# Frames: arm A at the origin facing +x (as in the batting cage); arm B at x = length facing -x.
+# Everything about one arm is computed in that arm's own frame, where it is arm A.
+
+sim:
+  timestep: 0.010
+  integrator: Euler
+  speculative: true
+
+ball:                      # ITTF ball
+  radius: 0.020            # m
+  mass: 0.0027             # kg
+
+paddle:                    # thin round blade on a short handle
+  radius: 0.075            # m
+  thickness: 0.006         # m: thinner than the 40 mm ball travels in a step
+  handle: 0.30             # m, flange to the start of the blade: a long handle, the paddle needs the lever
+  mass: 0.17               # kg
+  restitution: 0.85        # paddle-ball contact pair
+  restitution_model: 0.815 # what the planner's impact model uses: fitted on true-state rally hits (scripts/rally.py)
+
+table:                     # a midi table (the ITTF table is 2.74 x 1.525 m: the arm is too slow for it, see below)
+  length: 1.80
+  width: 1.00
+  height: 0.76             # top surface
+  net_height: 0.1525
+  net_overhang: 0.1525     # the net extends this far beyond each side line
+  gap: 0.75                # from each robot base to its end of the table [m]
+  restitution: 0.85        # table-ball contact pair (normal; the pair is frictionless)
+
+# Why a midi table and a long handle (scripts/rally.py --feasibility): a 2.7 g ball loses speed fast
+# (about 18 m/s^2 of drag at 8 m/s) and reaches the paddle at about 2.3 m/s.  On an ITTF table a
+# return must leave at about 7 m/s, which needs 2.8 m/s of paddle speed; the Panda's joint speed
+# limits give at most 1.5 m/s.  On a 1.8 m table the return needs about 4.3 m/s and 1.3 m/s of paddle.
+
+rally:
+  strike_x: [0.48, 0.60]          # candidate strike planes, in the hitting arm's frame [m]
+  bounce_time: [0.45, 0.55, 0.65] # candidate times from the hit to the bounce on the far half [s]: slow, high returns (the arm is slow)
+  land_x: [0.55, 0.85]            # landing points: distance before the far end of the table [m] (the half is 0.9 m deep)
+  land_y: [-0.25, 0.0, 0.25]      # ... and across it, in the hitting arm's frame [m]
+  zone_z: [0.80, 1.20]            # the opponent can hit a ball crossing its strike plane between these heights
+  zone_y: 0.30                    # ... and within this distance of its centre line
+  comfort_z: 0.98                 # preferred crossing height for the opponent
+  net_clearance: 0.03             # m above the net tape
+  max_hits: 12                    # a rally is stopped after this many returns
+  max_time: 11.0                  # s
+  replan_vz_sd: 0.08              # no replanning while the filter's v_z standard deviation exceeds this [m/s] (scripts/rally.py)
+  commit_time: 0.06               # within this of the cached swing's impact, only the same stroke is re-planned [s]
+
+serve:                     # a feeder at arm B's end serves to arm A
+  release_back: [0.60, 0.80]  # distance of the release point in front of arm B's base [m] (clear of B's waiting paddle)
+  release_y: [-0.15, 0.15]
+  release_z: [1.00, 1.15]
+  land_x: [0.30, 0.60]     # where the serve bounces on A's half: distance beyond A's end of the table [m]
+  land_y: [-0.20, 0.20]
+  spin: [0.0, 40.0]        # rad/s
+
+measurement:
+  delay: 0.03
+  sigma0: 0.002
+  sigma_per_m: 0.002
+  camera: [1.65, -2.5, 1.8]  # side camera at the net, looking across the table
+  dropout: 0.05

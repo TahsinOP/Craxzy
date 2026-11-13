@@ -1,0 +1,29 @@
+# Shared configuration for P1 (card catcher). Every script reads this file;
+# override values with `--set key.sub=value` (see card_catcher.config).
+
+sim:
+  timestep: 0.008          # s; TASK.md: 8 ms with speculative contacts
+  integrator: implicitfast # same integrator for flight-only and arm scenes
+  density: 1.2             # kg/m^3 (air)
+  viscosity: 1.8e-5        # Pa s (air)
+  speculative: true
+
+# Catch plane ("gripper's workspace plane"): { x : n . (x - c0) = 0 }.
+# The object approaches from the n > 0 side.  The plane is tilted 30 deg
+# from vertical so that both flat (ball) and steep (card near terminal fall)
+# trajectories cross it transversally (n . v bounded away from 0).
+plane:
+  c0: [0.52, 0.0, 0.752]
+  tilt_deg: 30.0           # normal = (cos tilt, 0, sin tilt)
+  # Catch window, in plane coordinates (u = world y, w = up-slope axis) [m].  It is the
+  # part of the plane the arm can reach *in time* under the datasheet velocity and
+  # acceleration limits (results/M3.md has the reachability map that fixed these numbers).
+  u_range: [-0.20, 0.20]
+  w_range: [-0.14, 0.14]
+
+measurement:
+  every: 1                 # one position fix every `every` sim steps (125 Hz at 8 ms)
+  sigma: 0.003             # m, isotropic position noise (std per axis)
+  dropout: 0.10            # probability that a frame is missing
+
+seeds: [0, 1, 2]

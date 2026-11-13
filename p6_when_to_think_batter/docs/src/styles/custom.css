@@ -1,0 +1,259 @@
+/* KaTeX rendering for math blocks, plus light layout tweaks for equation-heavy pages. */
+@import 'katex/dist/katex.min.css';
+
+.katex-display {
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding: 0.25rem 0;
+}
+
+.katex {
+	font-size: 1.05em;
+}
+
+/* Diagrams and interactive widgets embedded directly in the math/estimator/control pages. */
+figure.diagram,
+figure.widget {
+	margin: 1.5rem 0;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--sl-color-hairline);
+	border-radius: 0.5rem;
+	background: var(--sl-color-bg-inline-code);
+	overflow-x: auto;
+}
+
+figure.diagram svg,
+figure.widget svg {
+	display: block;
+	margin: 0 auto;
+	max-width: 100%;
+	min-width: 420px;
+}
+
+/* Narrow screens: the three-column control grid squeezed the slider down to a few
+   pixels once a label like "heading disagreement δφ" claimed its column, so give the
+   label a row of its own and let the slider have the full width. */
+@media (max-width: 560px) {
+	.widget-controls {
+		grid-template-columns: 1fr auto;
+	}
+
+	.widget-controls label {
+		grid-column: 1 / -1;
+		white-space: normal;
+		margin-bottom: -0.25rem;
+	}
+
+	.widget-controls input[type='range'] {
+		min-height: 1.75rem;
+	}
+}
+
+figure.diagram figcaption,
+figure.widget figcaption {
+	margin-top: 0.75rem;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
+	text-align: center;
+}
+
+.widget-controls {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	gap: 0.4rem 0.75rem;
+	margin-bottom: 0.75rem;
+	font-size: var(--sl-text-sm);
+}
+
+.widget-controls label {
+	white-space: nowrap;
+	color: var(--sl-color-text);
+}
+
+.widget-controls input[type='range'] {
+	width: 100%;
+	accent-color: var(--sl-color-accent);
+}
+
+.widget-controls output,
+.widget-readout {
+	font-family: var(--sl-font-system-mono);
+	font-variant-numeric: tabular-nums;
+	color: var(--sl-color-text-accent);
+	white-space: nowrap;
+}
+
+.widget-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+}
+
+.widget-buttons button {
+	font: inherit;
+	font-size: var(--sl-text-sm);
+	padding: 0.3rem 0.75rem;
+	border-radius: 0.35rem;
+	border: 1px solid var(--sl-color-hairline);
+	background: var(--sl-color-bg);
+	color: var(--sl-color-text);
+	cursor: pointer;
+}
+
+.widget-buttons button:hover {
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-text-accent);
+}
+
+.widget-buttons button.active {
+	background: var(--sl-color-accent-low);
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-text-accent);
+}
+
+.widget-summary {
+	margin-top: 0.75rem;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-text);
+	text-align: center;
+}
+
+.widget-summary strong {
+	color: var(--sl-color-text-accent);
+	font-family: var(--sl-font-system-mono);
+}
+
+/* Homepage card grid: equal-height cards with the "Read →" link aligned along the
+   bottom of every card, and the arrow kept on the same line as its label. */
+.sl-markdown-content .card-grid > .card {
+	height: 100%;
+}
+
+.sl-markdown-content .card-grid > .card > .body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.sl-markdown-content .card-grid > .card > .body > p {
+	margin: 0;
+}
+
+.sl-markdown-content .card-grid > .card > .body > p:last-child {
+	margin-top: auto;
+}
+
+.sl-markdown-content .card-grid > .card > .body a {
+	white-space: nowrap;
+}
+
+/* Plain-language summaries at the top of a page. */
+.lead {
+	font-size: var(--sl-text-lg);
+	color: var(--sl-color-gray-2);
+}
+
+/* Manim animations (manim/, rendered into public/anim/). Each is rendered once per
+   theme on the figure background, and only the one matching the reader's theme shows. */
+figure.anim {
+	margin: 1.5rem 0;
+	padding: 0.5rem;
+	border: 1px solid var(--sl-color-hairline);
+	border-radius: 0.5rem;
+	background: var(--sl-color-bg-inline-code);
+}
+
+figure.anim video {
+	display: block;
+	width: 100%;
+	height: auto;
+	/* preload="none" gives no size until the clip loads; reserve 16:9 so the page doesn't jump */
+	aspect-ratio: 16 / 9;
+	border-radius: 0.25rem;
+}
+
+:root[data-theme='light'] figure.anim .anim-dark,
+:root:not([data-theme='light']) figure.anim .anim-light {
+	display: none;
+}
+
+figure.anim figcaption {
+	margin-top: 0.75rem;
+	padding: 0 0.75rem 0.25rem;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
+	text-align: center;
+}
+
+/* Data figures (docs/figures/make_figures.py): one transparent SVG per theme. */
+figure.plot,
+figure.sim {
+	margin: 1.5rem 0;
+	padding: 0.75rem;
+	border: 1px solid var(--sl-color-hairline);
+	border-radius: 0.5rem;
+	background: var(--sl-color-bg-inline-code);
+}
+
+figure.plot img {
+	display: block;
+	margin: 0 auto;
+	max-width: 100%;
+	height: auto;
+}
+
+:root[data-theme='light'] figure.plot .fig-dark,
+:root:not([data-theme='light']) figure.plot .fig-light {
+	display: none;
+}
+
+/* MuJoCo clips (results/*.mp4, copied into public/video). Each <video> carries its own
+   width and height attributes, so the page reserves the right box before the clip loads. */
+figure.sim video {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 0.25rem;
+	background: #000;
+}
+
+figure.plot figcaption,
+figure.sim figcaption {
+	margin-top: 0.75rem;
+	padding: 0 0.5rem 0.25rem;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
+	text-align: center;
+}
+
+/* Inline SVG diagrams take their colours from the theme. */
+figure.diagram svg text {
+	fill: var(--sl-color-text);
+	font-family: var(--sl-font);
+}
+
+figure.diagram .box {
+	fill: var(--sl-color-bg);
+	stroke: var(--sl-color-gray-4);
+	stroke-width: 1.5;
+}
+
+figure.diagram .box-accent {
+	fill: var(--sl-color-accent-low);
+	stroke: var(--sl-color-accent);
+	stroke-width: 1.5;
+}
+
+figure.diagram .arrow {
+	stroke: var(--sl-color-gray-3);
+	stroke-width: 1.5;
+	fill: none;
+}
+
+figure.diagram .sub {
+	fill: var(--sl-color-gray-3);
+	font-size: 11px;
+}
