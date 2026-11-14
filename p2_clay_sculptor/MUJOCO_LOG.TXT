@@ -1,0 +1,24 @@
+WARNING Thu Nov 12 16:31:36 2026: Attach conflict when attaching 'panda nohand' to 'clay_sculptor', policy is 'warning'
+impratio: parent has 1 (default), child has 10, keeping parent value
+integrator: parent has 4, child has 3, keeping parent value
+
+WARNING Thu Nov 12 16:31:36 2026: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING Thu Nov 12 16:31:36 2026: Attach conflict when attaching 'panda nohand' to 'clay_sculptor', policy is 'warning'
+impratio: parent has 1 (default), child has 10, keeping parent value
+integrator: parent has 4, child has 3, keeping parent value
+
+WARNING Thu Nov 12 16:31:36 2026: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING Thu Nov 12 16:31:37 2026: Attach conflict when attaching 'panda nohand' to 'clay_sculptor', policy is 'warning'
+impratio: parent has 1 (default), child has 10, keeping parent value
+integrator: parent has 4, child has 3, keeping parent value
+
+WARNING Thu Nov 12 16:31:37 2026: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+
+WARNING Thu Nov 12 16:31:37 2026: Attach conflict when attaching 'panda nohand' to 'clay_sculptor', policy is 'warning'
+impratio: parent has 1 (default), child has 10, keeping parent value
+integrator: parent has 4, child has 3, keeping parent value
+
+WARNING Thu Nov 12 16:31:37 2026: Attaching a spec with an empty prefix may prevent the model from being saved correctly.
+

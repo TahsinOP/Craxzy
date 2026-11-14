@@ -1,0 +1,115 @@
+---
+title: Clay Sculptor
+description: A Panda arm presses, rolls and stamps plastic clay into a target shape in MuJoCo 4.0, with a geometric prior, learned dynamics, sampling-based MPC and an ensemble that knows when to ask the simulator.
+template: splash
+hero:
+  tagline: A press leaves a dent that is a third shallower than the stroke, pushes material sideways, and changes what the next press will do. The tool's geometry says where the clay must go; it does not say how much comes back. This is a study of what to derive, what to learn, and when to stop trusting the learned part and ask the simulator.
+  actions:
+    - text: Begin with the central idea
+      link: /overview/big-idea/
+      icon: right-arrow
+    - text: Run it and watch
+      link: /reference/running-it/
+      icon: laptop
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## The subject of this material
+
+A Franka Panda stands in front of a block of clay, 140 mm square and 40 mm thick, stuck to a board. Bolted to its flange is one of three tools: a flat press, a roller or a cross-shaped stamp. The arm is given a target shape, as a height map, and must deform the clay into it one action at a time.
+
+<figure class="sim">
+<video src="/video/oracle.mp4" loop muted playsinline controls preload="metadata"></video>
+<figcaption>The three targets, real time, wide view and close view: a slab flattened with the roller, a single pocket with the press, an X with the stamp. Every action was chosen by the planner with the simulator itself as its model.</figcaption>
+</figure>
+
+The clay is an elasto-plastic solid, a feature that is new in MuJoCo 4.0: strain it beyond a limit and the deformation stays. Three more features of 4.0 carry weight: the implicit **`discrete` integrator** that keeps a soft solid stable at 5 ms steps, **`mjSTATE_PLASTIC`**, which makes the plastic strain part of a state that can be saved and restored exactly, and **`mujoco.batch`**, which runs dozens of saved states forward in parallel on the CPU.
+
+The stack is hybrid in the same sense at every level: a derived model where one is exact, a learned one where the derived model has run out, and a rule for telling the two situations apart.
+
+<figure class="diagram">
+<svg viewBox="0 0 760 270" role="img" aria-label="The planning loop from a target height map to an executed action">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--sl-color-gray-3)"></path></marker></defs>
+<rect class="box" x="10" y="20" width="140" height="64" rx="8"></rect>
+<text x="80" y="46" text-anchor="middle" font-size="13" font-weight="600">Target and shape</text>
+<text class="sub" x="80" y="65" text-anchor="middle">height maps, 32 × 32</text>
+<rect class="box" x="180" y="20" width="140" height="64" rx="8"></rect>
+<text x="250" y="46" text-anchor="middle" font-size="13" font-weight="600">Search</text>
+<text class="sub" x="250" y="65" text-anchor="middle">CEM over (x, y, ψ, d, ℓ)</text>
+<rect class="box" x="350" y="20" width="140" height="64" rx="8"></rect>
+<text x="420" y="46" text-anchor="middle" font-size="13" font-weight="600">Geometric prior</text>
+<text class="sub" x="420" y="65" text-anchor="middle">volume the tool sweeps</text>
+<rect class="box-accent" x="520" y="20" width="140" height="64" rx="8"></rect>
+<text x="590" y="46" text-anchor="middle" font-size="13" font-weight="600">Learned residual</text>
+<text class="sub" x="590" y="65" text-anchor="middle">graph network × 5</text>
+<rect class="box-accent" x="520" y="170" width="140" height="64" rx="8"></rect>
+<text x="590" y="196" text-anchor="middle" font-size="13" font-weight="600">Do the five agree?</text>
+<text class="sub" x="590" y="215" text-anchor="middle">ensemble spread</text>
+<rect class="box" x="350" y="170" width="140" height="64" rx="8"></rect>
+<text x="420" y="196" text-anchor="middle" font-size="13" font-weight="600">Ask the simulator</text>
+<text class="sub" x="420" y="215" text-anchor="middle">re-rank the best 8</text>
+<rect class="box" x="180" y="170" width="140" height="64" rx="8"></rect>
+<text x="250" y="196" text-anchor="middle" font-size="13" font-weight="600">Execute</text>
+<text class="sub" x="250" y="215" text-anchor="middle">IK, pid servos</text>
+<rect class="box" x="10" y="170" width="140" height="64" rx="8"></rect>
+<text x="80" y="196" text-anchor="middle" font-size="13" font-weight="600">Plastic clay</text>
+<text class="sub" x="80" y="215" text-anchor="middle">MuJoCo flex, 5 ms</text>
+<path class="arrow" d="M150 52 H178" marker-end="url(#ah)"></path>
+<path class="arrow" d="M320 52 H348" marker-end="url(#ah)"></path>
+<path class="arrow" d="M490 52 H518" marker-end="url(#ah)"></path>
+<path class="arrow" d="M590 84 V168" marker-end="url(#ah)"></path>
+<path class="arrow" d="M520 202 H492" marker-end="url(#ah)"></path>
+<text class="sub" x="506" y="194" text-anchor="middle">no</text>
+<path class="arrow" d="M350 202 H322" marker-end="url(#ah)"></path>
+<path class="arrow" d="M590 234 V254 H250 V236" marker-end="url(#ah)"></path>
+<text class="sub" x="420" y="266" text-anchor="middle">yes: execute the model's choice</text>
+<path class="arrow" d="M180 202 H152" marker-end="url(#ah)"></path>
+<path class="arrow" d="M80 170 V86" marker-end="url(#ah)"></path>
+</svg>
+<figcaption>One decision. The highlighted blocks are learned; the rest is derived or simulated. The loop closes through the true shape of the clay after every action.</figcaption>
+</figure>
+
+<CardGrid>
+	<Card title="I · The problem and the idea" icon="rocket">
+		Why shaping clay is a modelling problem, what "hybrid" means at each level, and what was achieved and what was not.
+
+		[Read →](/overview/big-idea/)
+	</Card>
+	<Card title="II · The clay bench" icon="puzzle">
+		The elasto-plastic solid and the discretisation that survives being pressed, the arm and its three tools, the five-number action, and a state that restores bit for bit.
+
+		[Read →](/bench/clay/)
+	</Card>
+	<Card title="III · Shape" icon="magnifier">
+		Nodes, vertices and height map: three exact views of one shape, and the three distances used to compare shapes.
+
+		[Read →](/shape/representation/)
+	</Card>
+	<Card title="IV · Planning with the simulator" icon="setting">
+		The cross-entropy planner, and the best it can do when its model is the simulator itself.
+
+		[Read →](/planning/cem/)
+	</Card>
+	<Card title="V · Learned dynamics" icon="pencil">
+		The swept-volume prior in one formula, three models that learn the rest, and their errors one and five actions ahead.
+
+		[Read →](/dynamics/prior/)
+	</Card>
+	<Card title="VI · Planning with learned models" icon="random">
+		The same planner with each model in place of the simulator: shape error against planning time.
+
+		[Read →](/learned-mpc/results/)
+	</Card>
+	<Card title="VII · Knowing when the model is wrong" icon="approve-check">
+		An ensemble, two ways for it to be unsure, a planner that asks the simulator only then, and whether that beats asking at random (it does not).
+
+		[Read →](/fallback/ensemble/)
+	</Card>
+	<Card title="VIII · Evaluation and reference" icon="information">
+		All results in one place, the stretch goals, a plain account of the limits, how to run everything, the tests and the papers.
+
+		[Read →](/evaluation/results/)
+	</Card>
+</CardGrid>

@@ -1,0 +1,44 @@
+# Shared configuration for P2 (clay sculptor).  Every script reads this file;
+# override values with `--set key.sub=value` (see clay_sculptor.config).
+# The values here equal the dataclass defaults in the code; this file is the
+# place to change them.
+
+clay:
+  centre: [0.50, 0.0]        # block centre on the table plane; robot base at the origin [m]
+  size: [0.14, 0.14, 0.04]   # block extents [m]
+  cells: [12, 12, 3]         # trilinear cage cells: 13 x 13 x 4 nodes, bottom layer pinned
+  count: [25, 25, 4]         # interpolated vertices (collision, rendering, shape)
+  radius: 0.002              # vertex collision radius [m]
+  density: 1500.0            # kg/m^3
+  young: 1.5e+5              # Pa
+  poisson: 0.3
+  yield_strain: 0.02         # von Mises bound on the elastic deviatoric strain
+  damping: 0.01              # Rayleigh damping [s]
+
+sim:
+  timestep: 0.005            # s, implicit `discrete` integrator
+  solver: CG
+  iterations: 150
+  tolerance: 1.0e-5
+  gain_scale: 1.0            # times Menagerie's servo gains
+  ki_time: 0.05              # integral time of the pid servos [s]
+  imax: 0.02                 # anti-windup bound [rad s]
+
+prim:
+  hover: 0.015               # travel height above the undeformed top [m]
+  t_down: 0.40               # s
+  t_dwell: 0.10
+  t_slide: 0.80              # roller only
+  t_up: 0.30
+  t_settle: 0.10
+  xy_max: 0.055              # action bounds
+  depth_min: 0.002
+  depth_max: 0.014
+  length_min: 0.02
+  length_max: 0.10
+
+map:
+  size: 32                   # height-map pixels per side
+  half: 0.062                # pixel centres span [-half, half] [m]
+
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]   # planner seeds of every closed-loop experiment (M1, M3, M4)

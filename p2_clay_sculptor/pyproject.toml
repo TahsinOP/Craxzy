@@ -1,0 +1,38 @@
+[project]
+name = "clay-sculptor"
+version = "0.1.0"
+description = "P2: pressing plastic clay into a target shape with learned dynamics, a geometric prior and MPC in MuJoCo 4.0"
+requires-python = ">=3.11"
+dependencies = [
+    "mujoco==4.0.1",
+    "mujoco-menagerie==2026.11.3",
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "matplotlib==3.11.2",
+    "pyyaml==6.0.3",
+    "imageio==2.38.1",
+    "imageio-ffmpeg==0.8.1",
+    "pillow==13.0.0",
+    "torch==2.15.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }

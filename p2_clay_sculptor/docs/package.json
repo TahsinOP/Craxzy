@@ -1,0 +1,29 @@
+{
+  "name": "clay-sculptor-docs",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "build:offline": "OFFLINE=1 astro build && node scripts/offline.mjs",
+    "check:widgets": "astro build && node scripts/check-widgets.mjs",
+    "check:links": "astro build && node scripts/check-links.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.0",
+    "@astrojs/starlight": "^0.42.0",
+    "astro": "^7.2.10",
+    "katex": "^0.16.11",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
+    "sharp": "^0.35.3",
+    "starlight-theme-nova": "^0.12.3"
+  }
+}
